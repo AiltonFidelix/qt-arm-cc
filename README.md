@@ -60,11 +60,23 @@ sudo apt install libstdc++6:armhf
 sudo apt install libgcc1:armhf
 ```
 
-### 2. **Setting up the Cross-Compiler Toolchain**
+Criar o sysroot para uso na máquina host:
 
-First, install the cross-compiler toolchain for ARM.
+```bash
+sudo tar -czvf rpi3-lib.tar.gz /lib
+sudo tar -czvf rpi3-usr.tar.gz /usr
+```
 
-Machine 
+Copiar o sysroot para a máquina host:
+
+```bash
+scp rpi3-lib.tar.gz user@host:/path/to/syroot/
+scp rpi3-usr.tar.gz user@host:/path/to/syroot/
+```
+
+## Compilando o Qt 5.15.2 para armhf 32-bit
+
+Primeiro instale os pacotes necessários:
 
 ```bash
 sudo apt-get update
@@ -82,28 +94,25 @@ sudo apt-get install -y \
   build-essential \
   gcc-aarch64-linux-gnu \
   g++-aarch64-linux-gnu
-  # gcc-arm-linux-gnueabihf \
-  # g++-arm-linux-gnueabihf \
 ```
 
-This will install the necessary tools to compile code for ARM.
-
-### 3. **Download Qt 5.15 Source Code**
-
-Next, download the Qt 5.15 source code. You can either clone the official Qt repository or download the tarball from the Qt website:
+Baixe o código fonte do Qt 5.15.2:
 
 ```bash
 git clone --branch 5.15 https://code.qt.io/qt/qt5.git
 cd qt5
 ```
 
-Or, if using the tarball:
+Ou
 
 ```bash
 wget https://download.qt.io/archive/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz
 tar -xf qt-everywhere-src-5.15.2.tar.xz
 cd qt-everywhere-src-5.15.2
 ```
+
+# Antigo
+
 
 ```
 cd /
@@ -151,53 +160,6 @@ With the cross-compiler toolchain and sysroot ready, configure the Qt build proc
   -skip qtdatavis3d \
   -v
 ```
-
-qt5/mkspecs/devices/linux-rasp-pi3-g++/qmake.conf
-
-```
-include(../common/linux_device_pre.conf)
-
-QMAKE_RPATHLINKDIR_POST += $$[QT_SYSROOT]/opt/vc/lib
-
-VC_LIBRARY_PATH         = /opt/vc/lib
-VC_INCLUDE_PATH         = =/opt/vc/include
-
-VC_LINK_LINE            = -L=$${VC_LIBRARY_PATH}
-
-QMAKE_LIBDIR_OPENGL_ES2 = =$${VC_LIBRARY_PATH}
-QMAKE_LIBDIR_EGL        = $$QMAKE_LIBDIR_OPENGL_ES2
-QMAKE_LIBDIR_OPENVG     = $$QMAKE_LIBDIR_OPENGL_ES2
-
-QMAKE_INCDIR_EGL        = \
-                        $${VC_INCLUDE_PATH} \
-                        $${VC_INCLUDE_PATH}/interface/vcos/pthreads \
-                        $${VC_INCLUDE_PATH}/interface/vmcs_host/linux
-
-QMAKE_INCDIR_OPENGL_ES2 = $${QMAKE_INCDIR_EGL}
-
-QMAKE_LIBS_OPENGL_ES2   = $${VC_LINK_LINE} -lGLESv2
-
-# The official opt vc EGL references GLESv2 symbols: need to link it
-QMAKE_LIBS_EGL          = $${VC_LINK_LINE} -lEGL -lGLESv2
-
-QMAKE_LIBDIR_BCM_HOST   = =$$VC_LIBRARY_PATH
-QMAKE_INCDIR_BCM_HOST   = $$VC_INCLUDE_PATH
-QMAKE_LIBS_BCM_HOST     = -lbcm_host
-
-QMAKE_CFLAGS            = -march=armv8-a -mtune=cortex-a53 #-mfpu=crypto-neon-fp-armv8 -std=c++11
-QMAKE_CXXFLAGS          = $$QMAKE_CFLAGS
-
-#DISTRO_OPTS            += hard-float
-DISTRO_OPTS            += deb-multi-arch
-
-EGLFS_DEVICE_INTEGRATION= eglfs_brcm
-
-include(../common/linux_arm_device_post.conf)
-
-load(qt_config)
-```
-
-_FILE_OFFSET_BITS=64
 
 ### 6. **Build Qt**
 
