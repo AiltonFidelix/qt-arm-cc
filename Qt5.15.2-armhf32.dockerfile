@@ -1,3 +1,5 @@
+### STAGE 1: Build ###
+
 FROM debian:bookworm-slim AS builder
 
 WORKDIR /qt
@@ -54,9 +56,10 @@ RUN cd qt-everywhere-src-5.15.2 \
     -skip qtscript \
     -skip qtwayland \
     -skip qtdatavis3d \
-    -v
+    -v \ 
+    && make -j$(nproc) && make install
 
-RUN cd qt-everywhere-src-5.15.2 && make -j$(nproc) && make install
+### STAGE 2: final ###
 
 FROM debian:bookworm-slim
 
