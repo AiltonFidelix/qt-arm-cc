@@ -4,18 +4,34 @@ FROM debian:bookworm-slim AS builder
 
 WORKDIR /qt
 
+# Install host packages
 RUN apt-get update && apt-get install -y \
     wget \
     tar \
+    git \
     python-is-python3 \
     python-dev-is-python3 \
     bison \
     gperf \
     pkg-config \
     libclang-dev \
+    libssl-dev \
+    libicu-dev \
+    flex \
     build-essential \
-    gcc-arm-linux-gnueabihf \
-    g++-arm-linux-gnueabihf \
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    && apt-get clean
+
+# Install aarch64 packages
+RUN dpkg --add-architecture arm64 \
+    && apt-get update && apt-get install -y \
+    zlib1g-dev:arm64 \
+    libaio1:arm64 \
+    libssl-dev:arm64 \
+    libicu-dev:arm64 \
+    libreadline-dev:arm64 \
     && apt-get clean
 
 RUN mkdir -p rpi/sysroot 
@@ -33,19 +49,23 @@ RUN wget https://download.qt.io/archive/qt/5.15/5.15.2/single/qt-everywhere-src-
     && tar -xf qt-everywhere-src-5.15.2.tar.xz \
     && rm qt-everywhere-src-5.15.2.tar.xz
 
+# Fix some errors
 RUN sed -i '45s/^/#include <limits>\n /' qt-everywhere-src-5.15.2/qtbase/src/corelib/global/qglobal.h \
     && sed -i '1s/^/#include <limits>\n /' qt-everywhere-src-5.15.2/qtbase/src/corelib/global/qfloat16.h \
     && sed -i '1s/^/#include <limits>\n /' qt-everywhere-src-5.15.2/qtbase/src/corelib/global/qendian.h \
     && sed -i '1s/^/#include <limits>\n /' qt-everywhere-src-5.15.2/qtbase/src/corelib/text/qbytearraymatcher.h \
     && sed -i '1s/^/#include <limits>\n /' qt-everywhere-src-5.15.2/qtbase/src/corelib/tools/qoffsetstringarray_p.h
+    
+# TODO: Add openssl support
 
+# Compile Qt for aarch64
 RUN cd qt-everywhere-src-5.15.2 \ 
     && ./configure \
     -release \
     -sysroot /rpi/sysroot \
-    -prefix /Qt/5.15.2/armhf32 \
-    -device-option CROSS_COMPILE=/usr/bin/arm-linux-gnueabihf- \
-    -device linux-rasp-pi3-g++ \
+    -prefix /Qt/5.15.2/aarch64 \
+    -xplatform linux-aarch64-gnu-g++ \
+    -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- \
     -opensource \
     -confirm-license \
     -no-eglfs \
@@ -56,7 +76,7 @@ RUN cd qt-everywhere-src-5.15.2 \
     -skip qtscript \
     -skip qtwayland \
     -skip qtdatavis3d \
-    -v \ 
+    -v \
     && make -j$(nproc) && make install
 
 ### STAGE 2: final ###
@@ -69,8 +89,9 @@ RUN apt-get update && apt-get install -y \
     python-is-python3 \
     python-dev-is-python3 \
     build-essential \
-    gcc-arm-linux-gnueabihf \
-    g++-arm-linux-gnueabihf \
+    libssl-dev \
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
     && apt-get clean
 
 RUN mkdir /rpi
@@ -78,6 +99,6 @@ RUN mkdir /rpi
 COPY --from=builder /rpi/sysroot/Qt /Qt
 COPY --from=builder /qt/rpi /rpi
 
-ENV PATH=/Qt/5.15.2/armhf32/bin:$PATH
+ENV PATH=/Qt/5.15.2/aarch64/bin:$PATH
 
 CMD  ["/bin/bash"]
