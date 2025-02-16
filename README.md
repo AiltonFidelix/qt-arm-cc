@@ -16,13 +16,13 @@ Docker images for use in the build stage of **CI/CD** pipelines targeting **ARM*
 To build the image run the command below:
 
 ```
-docker build . -t <your-image-tag> -f Dockerfile.<qt-version>-<architecture> 
+docker build . -t <your-image-tag> -f <qt-version>-<architecture>.Dockerfile
 ```
 
 Example:
 
 ```
-docker build . -t qt5.15.2-aarch64 -f Dockerfile.Qt5.15.2-aarch64
+docker build . -t qt5.15.2-aarch64 -f Qt5.15.2-aarch64.Dockerfile
 ```
 
 **Note**: As stated in the `TODO` section, version `Qt5.15.2-armhf32` does not yet implement openssl support.
