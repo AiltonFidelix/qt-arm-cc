@@ -1,6 +1,6 @@
 # Qt cross-compilation for ARM
 
-Docker images for use in the build stage of **CI/CD** pipelines targeting **ARM** architectures.
+Docker images for use in the build stage of **CI/CD** pipelines targeting **ARM** architecture.
 
 ### Requirements
 
