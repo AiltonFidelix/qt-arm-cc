@@ -7,10 +7,6 @@ Docker images for use in the build stage of **CI/CD** pipelines targeting **ARM*
 - Docker version `27.5.1`
 - Docker buildx version `v0.20.0`
 
-### TODO
-
-- Implement openssl support on **Qt5.15.2-armhf32** image
-
 ### Build docker image
 
 To build the image run the command below:
@@ -24,8 +20,6 @@ Example:
 ```
 docker build . -t qt5.15.2-aarch64 -f Qt5.15.2-aarch64.Dockerfile
 ```
-
-**Note**: As stated in the `TODO` section, version `Qt5.15.2-armhf32` does not yet implement openssl support.
 
 ---
 
